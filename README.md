@@ -1,52 +1,59 @@
 # Sistema de Acceso Vehicular con Reconocimiento de Patentes
 
-Este proyecto implementa un sistema de control de acceso vehicular utilizando un ESP32, simulado en Wokwi y con código fuente disponible en GitHub. El sistema reconoce patentes de vehículos y activa servomotores para abrir portones según los permisos configurados.
+Proyecto basado en **ESP32** y **MicroPython** que controla dos portones motorizados.
+El sistema consulta la API de [Plate Recognizer](https://www.platerecognizer.com/) para
+validar las patentes y abrir los portones solo cuando una matrícula autorizada es detectada.
 
-## Componentes del Hardware
+## Características
 
-- **ESP32 DevKit C**: Microcontrolador principal que ejecuta el código y controla los componentes.
-- **2 Servomotores**: Para simular la apertura de los portones A y B.
-- **2 LEDs**: Indican el estado de los relés (rojo para portón A y verde para portón B).
-- **Resistencias**: 220Ω para limitar la corriente a los LEDs.
-- **Botón**: Para apertura manual de los portones.
+- Reconocimiento de patentes mediante servicio web.
+- Control de dos servomotores y LEDs indicativos.
+- Ángulos `OPEN_ANGLE`/`CLOSE_ANGLE` y tiempo de apertura configurables.
+- Tabla de pines editable para adaptarse al hardware disponible.
+- Botón físico para apertura manual de respaldo.
+- Modo de ejecución `single` (una sola consulta) o `loop` (consulta periódica).
 
-## Esquema de Conexiones
+## Hardware
 
-En la simulación de Wokwi, los componentes están conectados de la siguiente manera:
+| Pin ESP32 | Uso      | Descripción           |
+|-----------|----------|-----------------------|
+| 18        | Servo A  | PWM del portón A      |
+| 19        | Servo B  | PWM del portón B      |
+| 2         | LED A    | Indicador/relé portón A |
+| 15        | LED B    | Indicador/relé portón B |
+| 4         | Botón    | Apertura manual       |
 
-- **Servomotor Portón A**: Pin 18 (señal PWM), 3V3, GND
-- **Servomotor Portón B**: Pin 19 (señal PWM), 3V3, GND
-- **LED Relé A (rojo)**: Pin 2, GND (con resistencia de 220Ω)
-- **LED Relé B (verde)**: Pin 15, GND (con resistencia de 220Ω)
-- **Botón Manual**: Pin 4, GND
+## Requisitos
 
-## Funcionalidades
+- Placa **ESP32 DevKit C** o simulador en [Wokwi](https://wokwi.com/).
+- Firmware **MicroPython 1.20+**.
+- Token válido de Plate Recognizer.
+- Conexión WiFi a Internet.
 
-- **Reconocimiento de patentes**: El sistema identifica placas vehiculares y compara con una base de datos.
-- **Control de acceso**: Permite o deniega el acceso según los permisos asignados a cada patente.
-- **Apertura diferenciada**: Según el tipo de permiso, se abre el portón A, el portón B, o ambos.
-- **Modo manual**: Botón para abrir los portones en caso de emergencia o necesidad.
+## Configuración
 
-## Cómo Funciona
+1. Copiar `main.py` al ESP32 o al proyecto de Wokwi.
+2. Reemplazar `PLATE_RECOGNIZER_TOKEN` por el token personal (el programa falla si queda el marcador por defecto).
+3. Ajustar `AUTHORIZED_PLATES` y `IMAGE_URL` según la matrícula a validar.
+4. Opcionalmente modificar `RUN_MODE`, `OPEN_ANGLE`, `CLOSE_ANGLE`, `HOLD_TIME_S` y los pines usados.
 
-1. El sistema captura la imagen de la patente del vehículo (simulado en Wokwi).
-2. Procesa la imagen y extrae el número de la patente.
-3. Verifica en la base de datos si la patente tiene permiso de acceso.
-4. Si está autorizada, activa el servomotor correspondiente para abrir el portón.
-5. Los LEDs indican el estado de los relés y confirman la apertura.
+## Uso
 
-## Recursos
+Al iniciar, el programa valida el token, conecta a la red WiFi y realiza una consulta a la API según el modo configurado. Si la patente reconocida está en la lista blanca, `cycle_gates()` abre ambos servos durante el tiempo establecido y luego los cierra. El botón físico permite la apertura manual en cualquier momento.
 
-- **Simulación en Wokwi**: [Ver simulación](https://wokwi.com/projects/439740289309594625)   (link)
-- **Código fuente en GitHub**: [Repositorio](https://github.com/geromendez199/ESP32-Acceso-Vehicular)   (link)
+## Simulación
 
-[]()
+El archivo `diagram.json` describe la conexión de hardware para Wokwi y puede usarse para probar el sistema sin hardware real.
 
-## Implementación
+## Desarrollo
 
-El proyecto está implementado en Python para el ESP32 y utiliza bibliotecas para control de servomotores y procesamiento de señales digitales. La simulación permite probar el funcionamiento sin necesidad de hardware físico.
+Para verificar la sintaxis antes de subir al microcontrolador:
 
-<aside>
-Este proyecto demuestra la aplicación de sistemas embebidos en soluciones de seguridad y control de acceso, combinando hardware y software para resolver un problema práctico.
+```bash
+python -m py_compile main.py
+```
 
-</aside>
+## Créditos
+
+Desarrollado por Gero Mendez y colaboradores.
+
